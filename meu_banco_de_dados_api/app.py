@@ -125,6 +125,34 @@ def pesquisar_compras():
     except Exception as e:
         return jsonify({"erro": f"Erro ao pesquisar por produto: {str(e)}"}), 500
 
+    # Novo endpoint para deletar um documento
+@app.route('/deletar/<string:document_id>', methods=['DELETE'])
+def deletar_documento(document_id):
+        """
+        Deleta um documento do MongoDB com base no seu _id.
+        O _id é passado como parte da URL.
+        Ex: DELETE /deletar/60c... (o ID que você obteve ao cadastrar)
+        """
+        try:
+            # Tenta converter o ID da string para um ObjectId do MongoDB
+            # Isso é crucial porque o _id no MongoDB é um ObjectId, não uma string simples
+            object_id = ObjectId(document_id)
+        except Exception:
+            # Se o ID não for um ObjectId válido, retorna erro 400
+            return jsonify({"erro": "ID de documento inválido."}), 400
+
+        try:
+            # Tenta deletar o documento usando o ObjectId
+            result = collection.delete_one({"_id": object_id})
+
+            if result.deleted_count == 1:
+                return jsonify({"mensagem": f"Documento com ID {document_id} deletado com sucesso!"}), 200
+            else:
+                return jsonify({"mensagem": "Nenhum documento encontrado com o ID fornecido para exclusão."}), 404
+
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao deletar documento: {str(e)}"}), 500
+
 # Garante que o servidor Flask rode apenas quando o script é executado diretamente
 if __name__ == '__main__':
     # debug=True: o servidor reinicia automaticamente a cada alteração no código.
