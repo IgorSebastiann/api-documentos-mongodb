@@ -9,8 +9,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# --- CONFIGURAÇÃO DO MONGODB ATLAS ---
-# Obtém a URI de conexão, o nome do banco e da coleção das variáveis de ambiente
 MONGO_URI = os.getenv("MONGODB_URI")
 DB_NAME = os.getenv("MONGODB_DB_NAME")
 COLLECTION_NAME = os.getenv("MONGODB_COLLECTION_NAME")
