@@ -86,11 +86,17 @@ def pesquisar_nome():
 
 @app.route('/pesquisar_rua', methods=['GET'])
 def pesquisar_rua():
-    rua = request.args.get('Rua') # Obtém o valor do parâmetro 'rua' da URL (ex: "Acacias", "coqueiros")
+    """
+    Recebe 'rua' como parâmetro na URL e retorna documentos que contenham essa rua.
+    Ex: /pesquisar_rua?rua=Acacias
+    """
+    rua = request.args.get('rua')
     if not rua:
         return jsonify({"erro": "Parâmetro 'rua' é obrigatório na URL."}), 400
+
     try:
-        # A chave para a pesquisa case-insensitive e parcial é o $regex e $options: "i"
+        # Pesquisa no campo 'endereco.rua' do seu documento
+        # IMPORTANTE: Garanta que seus documentos tenham um campo 'rua' dentro do subdocumento 'endereco'.
         documentos = list(collection.find({"endereco.rua": {"$regex": rua, "$options": "i"}}))
         for doc in documentos:
             doc['_id'] = str(doc['_id'])
@@ -99,6 +105,7 @@ def pesquisar_rua():
             return jsonify(documentos), 200
         else:
             return jsonify({"mensagem": "Nenhum documento encontrado com a rua fornecida."}), 404
+
     except Exception as e:
         return jsonify({"erro": f"Erro ao pesquisar por rua: {str(e)}"}), 500
 
