@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API de Documentos - Frontend Simples</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fdfdff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        textarea {
+            width: calc(100% - 22px); /* Adjust for padding/border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding/border in width */
+            font-size: 1rem;
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+        button.delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .result-area {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap; /* Preserves whitespace and line breaks */
+            word-wrap: break-word; /* Breaks long words */
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+        }
+        .message-success {
+            color: green;
+            font-weight: bold;
+        }
+        .message-error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API de Documentos</h1>
+        <p>Este é um front-end simples para interagir com sua API Flask + MongoDB Atlas.</p>
+
+        <div class="section" id="cadastrar-section">
+            <h2>Cadastrar Novo Documento</h2>
+            <div class="form-group">
+                <label for="cadastrar-nome">Nome:</label>
+                <input type="text" id="cadastrar-nome" placeholder="Nome Completo">
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-email">Email:</label>
+                <input type="email" id="cadastrar-email" placeholder="email@example.com">
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-telefone">Telefone:</label>
+                <input type="tel" id="cadastrar-telefone" placeholder="5511987654321">
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-data-nascimento">Data de Nascimento (AAAA-MM-DDTHH:MM:SS.000Z):</label>
+                <input type="text" id="cadastrar-data-nascimento" placeholder="Ex: 1990-01-01T00:00:00.000+00:00">
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-endereco">Endereço (JSON):</label>
+                <textarea id="cadastrar-endereco" placeholder='{"rua": "Rua X", "numero": "123", "cidade": "Cidade Y"}'></textarea>
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-historico-compras">Histórico de Compras (JSON Array):</label>
+                <textarea id="cadastrar-historico-compras" placeholder='[{"product_id": "P001", "descricao": "Produto A", "valor": "100.00"}]'></textarea>
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-tags">Tags (Separadas por vírgula):</label>
+                <input type="text" id="cadastrar-tags" placeholder="tag1, tag2">
+            </div>
+            <div class="form-group">
+                <label for="cadastrar-ativo">Ativo (true/false):</label>
+                <input type="text" id="cadastrar-ativo" placeholder="true ou false">
+            </div>
+            <button onclick="cadastrarDocumento()">Cadastrar</button>
+            <div id="cadastrar-result" class="result-area"></div>
+        </div>
+
+        <div class="section" id="pesquisar-section">
+            <h2>Pesquisar Documentos</h2>
+
+            <div class="form-group">
+                <label for="pesquisar-nome-input">Pesquisar por Nome:</label>
+                <input type="text" id="pesquisar-nome-input" placeholder="Digite o nome ou parte dele">
+                <button onclick="pesquisar('nome')">Pesquisar</button>
+            </div>
+
+            <div class="form-group">
+                <label for="pesquisar-rua-input">Pesquisar por Rua:</label>
+                <input type="text" id="pesquisar-rua-input" placeholder="Digite a rua ou parte dela">
+                <button onclick="pesquisar('rua')">Pesquisar</button>
+            </div>
+
+            <div class="form-group">
+                <label for="pesquisar-compras-input">Pesquisar por Produto Comprado:</label>
+                <input type="text" id="pesquisar-compras-input" placeholder="Digite o produto ou parte dele">
+                <button onclick="pesquisar('compras')">Pesquisar</button>
+            </div>
+
+            <div id="pesquisar-result" class="result-area"></div>
+        </div>
+
+        <div class="section" id="deletar-section">
+            <h2>Deletar Documento</h2>
+            <div class="form-group">
+                <label for="deletar-id-input">ID do Documento para Deletar:</label>
+                <input type="text" id="deletar-id-input" placeholder="Cole o _id aqui (ex: 60c...)">
+            </div>
+            <button class="delete-btn" onclick="deletarDocumento()">Deletar</button>
+            <div id="deletar-result" class="result-area"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000'; // Mantenha esta URL se sua API estiver rodando localmente na porta 5000
+
+        async function cadastrarDocumento() {
+            const resultDiv = document.getElementById('cadastrar-result');
+            resultDiv.innerHTML = 'Processando...';
+            resultDiv.className = 'result-area';
+
+            const nome = document.getElementById('cadastrar-nome').value;
+            const email = document.getElementById('cadastrar-email').value;
+            const telefone = document.getElementById('cadastrar-telefone').value;
+            const dataNascimento = document.getElementById('cadastrar-data-nascimento').value;
+            const tags = document.getElementById('cadastrar-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+            const ativo = document.getElementById('cadastrar-ativo').value.toLowerCase() === 'true';
+
+            let endereco;
+            try {
+                endereco = JSON.parse(document.getElementById('cadastrar-endereco').value);
+            } catch (e) {
+                resultDiv.innerHTML = '<span class="message-error">Erro no JSON de Endereço: ' + e.message + '</span>';
+                return;
+            }
+
+            let historicoCompras;
+            try {
+                historicoCompras = JSON.parse(document.getElementById('cadastrar-historico-compras').value);
+            } catch (e) {
+                resultDiv.innerHTML = '<span class="message-error">Erro no JSON de Histórico de Compras: ' + e.message + '</span>';
+                return;
+            }
+
+            const data = {
+                nome,
+                email,
+                telefone,
+                data_nascimento: dataNascimento, // Supondo que a data já venha no formato correto do API
+                endereco,
+                ativo,
+                tags,
+                historico_compras: historicoCompras
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/cadastrar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="message-success">Sucesso:</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    // Limpar formulário após sucesso
+                    document.getElementById('cadastrar-nome').value = '';
+                    document.getElementById('cadastrar-email').value = '';
+                    document.getElementById('cadastrar-telefone').value = '';
+                    document.getElementById('cadastrar-data-nascimento').value = '';
+                    document.getElementById('cadastrar-endereco').value = '';
+                    document.getElementById('cadastrar-historico-compras').value = '';
+                    document.getElementById('cadastrar-tags').value = '';
+                    document.getElementById('cadastrar-ativo').value = '';
+
+                } else {
+                    resultDiv.innerHTML = `<span class="message-error">Erro (${response.status}):</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="message-error">Erro de Rede ou Servidor:</span> ${error.message}`;
+            }
+        }
+
+        async function pesquisar(tipo) {
+            const resultDiv = document.getElementById('pesquisar-result');
+            resultDiv.innerHTML = 'Processando...';
+            resultDiv.className = 'result-area';
+
+            let url = '';
+            let paramValue = '';
+
+            if (tipo === 'nome') {
+                paramValue = document.getElementById('pesquisar-nome-input').value;
+                url = `${API_BASE_URL}/pesquisar_nome?nome=${encodeURIComponent(paramValue)}`;
+            } else if (tipo === 'rua') {
+                paramValue = document.getElementById('pesquisar-rua-input').value;
+                url = `${API_BASE_URL}/pesquisar_rua?rua=${encodeURIComponent(paramValue)}`;
+            } else if (tipo === 'compras') {
+                paramValue = document.getElementById('pesquisar-compras-input').value;
+                url = `${API_BASE_URL}/pesquisar_compras?produto=${encodeURIComponent(paramValue)}`;
+            }
+
+            if (!paramValue) {
+                resultDiv.innerHTML = '<span class="message-error">Por favor, digite um valor para a pesquisa.</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.length === 0 || result.mensagem) { // Handle 404 responses from API
+                        resultDiv.innerHTML = `<span class="message-error">${result.mensagem || 'Nenhum resultado encontrado.'}</span>`;
+                    } else {
+                        resultDiv.innerHTML = `<span class="message-success">Resultados encontrados:</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    }
+                } else {
+                     // If API returns 404 (Not Found) or other errors directly
+                    resultDiv.innerHTML = `<span class="message-error">Erro (${response.status}):</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="message-error">Erro de Rede ou Servidor:</span> ${error.message}`;
+            }
+        }
+
+        async function deletarDocumento() {
+            const resultDiv = document.getElementById('deletar-result');
+            resultDiv.innerHTML = 'Processando...';
+            resultDiv.className = 'result-area';
+
+            const id = document.getElementById('deletar-id-input').value;
+
+            if (!id) {
+                resultDiv.innerHTML = '<span class="message-error">Por favor, digite o ID para deletar.</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/deletar/${encodeURIComponent(id)}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="message-success">Sucesso:</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('deletar-id-input').value = ''; // Limpar campo
+                } else {
+                    resultDiv.innerHTML = `<span class="message-error">Erro (${response.status}):</span><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="message-error">Erro de Rede ou Servidor:</span> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
